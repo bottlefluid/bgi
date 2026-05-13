@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LiquidSchedule</title>
+  <title>Current Period</title>
   <style>
     * {
       box-sizing: border-box;
@@ -12,49 +12,75 @@
       font-family: Arial, sans-serif;
     }
 
+    html, body {
+      height: 100%;
+    }
+
     body {
       min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      background: linear-gradient(135deg, #050505, #6b0000, #b30000);
-      color: white;
       padding: 20px;
+      color: #fff;
+      background:
+        radial-gradient(circle at top, rgba(120, 0, 0, 0.35), transparent 34%),
+        radial-gradient(circle at bottom, rgba(255, 40, 40, 0.08), transparent 42%),
+        linear-gradient(135deg, #000000 0%, #050505 40%, #120000 72%, #3a0000 100%);
     }
 
     .app {
       width: 100%;
-      max-width: 600px;
-      background: rgba(0, 0, 0, 0.6);
-      border: 1px solid rgba(255, 80, 80, 0.25);
-      border-radius: 24px;
-      padding: 40px 30px;
+      max-width: 640px;
       text-align: center;
-      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+      padding: 44px 30px;
+      border-radius: 28px;
+      background: rgba(6, 6, 6, 0.82);
+      border: 1px solid rgba(255, 80, 80, 0.22);
+      box-shadow:
+        0 24px 70px rgba(0, 0, 0, 0.75),
+        inset 0 1px 0 rgba(255, 255, 255, 0.04);
+      backdrop-filter: blur(14px) saturate(125%);
+      -webkit-backdrop-filter: blur(14px) saturate(125%);
     }
 
     h1 {
-      font-size: clamp(1.8rem, 4vw, 2.8rem);
-      margin-bottom: 20px;
+      font-size: clamp(1.8rem, 4vw, 2.7rem);
+      font-weight: 800;
+      letter-spacing: 0.4px;
+      margin-bottom: 18px;
+      color: #ffffff;
     }
 
     #period {
-      font-size: clamp(2.2rem, 7vw, 4.5rem);
-      font-weight: 800;
-      color: #ff5a5a;
-      text-shadow: 0 0 18px rgba(255, 90, 90, 0.25);
+      font-size: clamp(2.6rem, 9vw, 5rem);
+      font-weight: 900;
+      line-height: 1;
+      color: #ff5b5b;
+      text-shadow:
+        0 0 10px rgba(255, 80, 80, 0.16),
+        0 0 24px rgba(255, 80, 80, 0.10);
+      transition: opacity 180ms ease, transform 180ms ease;
+      min-height: 1.1em;
     }
 
     .time {
       margin-top: 14px;
-      font-size: 1rem;
-      opacity: 0.85;
+      font-size: 0.95rem;
+      color: rgba(255, 255, 255, 0.7);
+      letter-spacing: 0.2px;
     }
 
     .status {
       margin-top: 18px;
-      font-size: 1.05rem;
-      opacity: 0.9;
+      font-size: 1rem;
+      color: rgba(255, 255, 255, 0.88);
+      min-height: 1.2em;
+    }
+
+    .fade {
+      opacity: 0.35;
+      transform: scale(0.985);
     }
   </style>
 </head>
@@ -136,10 +162,24 @@
     };
 
     const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    let lastPeriod = '';
 
     function toMinutes(time) {
       const [h, m] = time.split(':').map(Number);
       return h * 60 + m;
+    }
+
+    function getCurrentPeriod(now, schedule) {
+      const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+      for (const block of schedule) {
+        const start = toMinutes(block.start);
+        const end = toMinutes(block.end);
+        if (currentMinutes >= start && currentMinutes < end) return block.name;
+      }
+
+      if (currentMinutes < toMinutes(schedule[0].start)) return 'Before School';
+      return 'School Over';
     }
 
     function updatePeriod() {
@@ -150,36 +190,38 @@
       document.getElementById('clock').textContent =
         now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
+      const periodEl = document.getElementById('period');
+      const statusEl = document.getElementById('status');
+
       if (!schedule) {
-        document.getElementById('period').textContent = 'No School';
-        document.getElementById('status').textContent = 'Enjoy your day off.';
+        periodEl.textContent = 'No School';
+        statusEl.textContent = 'Enjoy your day off.';
+        lastPeriod = 'No School';
         return;
       }
 
-      const currentMinutes = now.getHours() * 60 + now.getMinutes();
-      let current = 'No School';
+      const current = getCurrentPeriod(now, schedule);
 
-      for (const block of schedule) {
-        const start = toMinutes(block.start);
-        const end = toMinutes(block.end);
-
-        if (currentMinutes >= start && currentMinutes < end) {
-          current = block.name;
-          break;
-        }
-      }
-
-      if (current === 'No School') {
-        if (currentMinutes < toMinutes(schedule[0].start)) {
-          document.getElementById('status').textContent = 'School has not started yet.';
-        } else {
-          document.getElementById('status').textContent = 'School is over for today.';
-        }
+      if (current !== lastPeriod) {
+        periodEl.classList.add('fade');
+        setTimeout(() => {
+          periodEl.textContent = current;
+          periodEl.classList.remove('fade');
+        }, 120);
+        lastPeriod = current;
       } else {
-        document.getElementById('status').textContent = 'It will change automatically when the next class starts.';
+        periodEl.textContent = current;
       }
 
-      document.getElementById('period').textContent = current;
+      if (current === 'Before School') {
+        statusEl.textContent = 'School has not started yet.';
+      } else if (current === 'School Over') {
+        statusEl.textContent = 'School is over for today.';
+      } else if (current === 'No School') {
+        statusEl.textContent = 'Enjoy your day off.';
+      } else {
+        statusEl.textContent = 'It will update automatically when the next class starts.';
+      }
     }
 
     updatePeriod();
