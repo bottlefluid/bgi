@@ -3,13 +3,26 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Current Period</title>
+  <title>SGI</title>
   <style>
+    :root {
+      --bg1: #000000;
+      --bg2: #050505;
+      --bg3: #120000;
+      --bg4: #3a0000;
+      --card: rgba(8, 8, 8, 0.84);
+      --card-border: rgba(255, 84, 84, 0.22);
+      --accent: #ff5b5b;
+      --text: #ffffff;
+      --muted: rgba(255, 255, 255, 0.72);
+      --glow: rgba(255, 91, 91, 0.12);
+    }
+
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: Arial, sans-serif;
+      font-family: Inter, Arial, sans-serif;
     }
 
     html, body {
@@ -22,53 +35,153 @@
       justify-content: center;
       align-items: center;
       padding: 20px;
-      color: #fff;
+      color: var(--text);
+      overflow: hidden;
       background:
-        radial-gradient(circle at top, rgba(120, 0, 0, 0.35), transparent 34%),
-        radial-gradient(circle at bottom, rgba(255, 40, 40, 0.08), transparent 42%),
-        linear-gradient(135deg, #000000 0%, #050505 40%, #120000 72%, #3a0000 100%);
+        radial-gradient(circle at top, var(--glow), transparent 32%),
+        radial-gradient(circle at 20% 80%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 22%),
+        radial-gradient(circle at 80% 20%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 18%),
+        linear-gradient(135deg, var(--bg1) 0%, var(--bg2) 38%, var(--bg3) 70%, var(--bg4) 100%);
+      transition: background 300ms ease;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: -40%;
+      background: radial-gradient(circle, color-mix(in srgb, var(--accent) 18%, transparent) 0%, transparent 55%);
+      filter: blur(60px);
+      animation: drift 16s ease-in-out infinite alternate;
+      pointer-events: none;
     }
 
     .app {
+      position: relative;
       width: 100%;
-      max-width: 640px;
+      max-width: 680px;
       text-align: center;
-      padding: 44px 30px;
-      border-radius: 28px;
-      background: rgba(6, 6, 6, 0.82);
-      border: 1px solid rgba(255, 80, 80, 0.22);
+      padding: 48px 34px 30px;
+      border-radius: 30px;
+      background: var(--card);
+      border: 1px solid var(--card-border);
       box-shadow:
-        0 24px 70px rgba(0, 0, 0, 0.75),
-        inset 0 1px 0 rgba(255, 255, 255, 0.04);
-      backdrop-filter: blur(14px) saturate(125%);
-      -webkit-backdrop-filter: blur(14px) saturate(125%);
+        0 24px 80px rgba(0, 0, 0, 0.78),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(16px) saturate(128%);
+      -webkit-backdrop-filter: blur(16px) saturate(128%);
+    }
+
+    .app::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 30px;
+      padding: 1px;
+      background: linear-gradient(135deg, rgba(255,255,255,0.10), color-mix(in srgb, var(--accent) 32%, rgba(255,255,255,0.02)), rgba(255,255,255,0.02));
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 18px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .theme-wrap {
+      position: relative;
+    }
+
+    .theme-btn {
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.06);
+      color: #fff;
+      padding: 10px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 0.92rem;
+      transition: transform 160ms ease, background 160ms ease, border-color 160ms ease;
+    }
+
+    .theme-btn:hover {
+      transform: translateY(-1px);
+      background: rgba(255,255,255,0.10);
+      border-color: rgba(255,255,255,0.20);
+    }
+
+    .menu {
+      position: absolute;
+      top: 46px;
+      right: 0;
+      width: 190px;
+      background: rgba(10, 10, 10, 0.96);
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 16px;
+      padding: 8px;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.55);
+      display: none;
+      z-index: 20;
+    }
+
+    .menu.show {
+      display: block;
+    }
+
+    .menu button {
+      width: 100%;
+      border: 0;
+      background: transparent;
+      color: #fff;
+      padding: 10px 12px;
+      text-align: left;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 150ms ease;
+      font-size: 0.92rem;
+    }
+
+    .menu button:hover {
+      background: rgba(255,255,255,0.08);
     }
 
     h1 {
-      font-size: clamp(1.8rem, 4vw, 2.7rem);
+      font-size: clamp(1.7rem, 3.8vw, 2.6rem);
       font-weight: 800;
-      letter-spacing: 0.4px;
+      letter-spacing: 0.5px;
       margin-bottom: 18px;
-      color: #ffffff;
+      color: #fff;
+      text-shadow: 0 0 18px color-mix(in srgb, var(--accent) 12%, transparent);
     }
 
     #period {
-      font-size: clamp(2.6rem, 9vw, 5rem);
+      font-size: clamp(2.7rem, 9vw, 5.2rem);
       font-weight: 900;
       line-height: 1;
-      color: #ff5b5b;
+      letter-spacing: -0.04em;
+      color: var(--accent);
       text-shadow:
-        0 0 10px rgba(255, 80, 80, 0.16),
-        0 0 24px rgba(255, 80, 80, 0.10);
-      transition: opacity 180ms ease, transform 180ms ease;
+        0 0 10px color-mix(in srgb, var(--accent) 24%, transparent),
+        0 0 28px color-mix(in srgb, var(--accent) 14%, transparent);
+      transition: opacity 220ms ease, transform 220ms ease, filter 220ms ease, color 220ms ease;
       min-height: 1.1em;
+      margin-top: 6px;
+    }
+
+    #period.pop {
+      opacity: 0.25;
+      transform: scale(0.975);
+      filter: blur(1px);
     }
 
     .time {
       margin-top: 14px;
       font-size: 0.95rem;
-      color: rgba(255, 255, 255, 0.7);
-      letter-spacing: 0.2px;
+      color: var(--muted);
+      letter-spacing: 0.25px;
     }
 
     .status {
@@ -78,21 +191,105 @@
       min-height: 1.2em;
     }
 
-    .fade {
-      opacity: 0.35;
-      transform: scale(0.985);
+    .pulse {
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      margin-left: 8px;
+      border-radius: 999px;
+      background: var(--accent);
+      box-shadow: 0 0 14px color-mix(in srgb, var(--accent) 55%, transparent);
+      animation: pulse 1.6s ease-in-out infinite;
+      vertical-align: middle;
+      margin-top: 16px;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(0.9); opacity: 0.7; }
+      50% { transform: scale(1.25); opacity: 1; }
+    }
+
+    @keyframes drift {
+      from { transform: translate3d(-1%, -1%, 0) scale(1); }
+      to { transform: translate3d(1%, 1%, 0) scale(1.05); }
+    }
+
+    @media (max-width: 640px) {
+      .app { padding: 38px 22px 26px; border-radius: 24px; }
+      .topbar { justify-content: center; }
+      .menu { right: 50%; transform: translateX(50%); }
     }
   </style>
 </head>
 <body>
   <main class="app">
+    <div class="topbar">
+      <div class="theme-wrap">
+        <button class="theme-btn" id="themeBtn">Themes</button>
+        <div class="menu" id="themeMenu">
+          <button data-theme="redblack">Red Black</button>
+          <button data-theme="blue">Blue Night</button>
+          <button data-theme="purple">Purple Glow</button>
+          <button data-theme="green">Green Matrix</button>
+          <button data-theme="gold">Gold Night</button>
+          <button data-theme="ice">Ice Blue</button>
+          <button data-theme="sunset">Sunset</button>
+          <button data-theme="neon">Neon Storm</button>
+        </div>
+      </div>
+    </div>
+
     <h1>Current Period</h1>
     <div id="period">Loading...</div>
     <div class="time" id="clock"></div>
     <div class="status" id="status"></div>
+    <span class="pulse" aria-hidden="true"></span>
   </main>
 
   <script>
+    const themes = {
+      redblack: {
+        '--bg1': '#000000', '--bg2': '#050505', '--bg3': '#120000', '--bg4': '#3a0000',
+        '--card': 'rgba(8, 8, 8, 0.84)', '--card-border': 'rgba(255, 84, 84, 0.22)',
+        '--accent': '#ff5b5b', '--muted': 'rgba(255, 255, 255, 0.72)', '--glow': 'rgba(255, 91, 91, 0.12)'
+      },
+      blue: {
+        '--bg1': '#020617', '--bg2': '#031026', '--bg3': '#08214a', '--bg4': '#0f3c7a',
+        '--card': 'rgba(5, 12, 24, 0.82)', '--card-border': 'rgba(91, 160, 255, 0.22)',
+        '--accent': '#5fb0ff', '--muted': 'rgba(235, 245, 255, 0.72)', '--glow': 'rgba(95, 176, 255, 0.12)'
+      },
+      purple: {
+        '--bg1': '#080014', '--bg2': '#12001f', '--bg3': '#250036', '--bg4': '#43005f',
+        '--card': 'rgba(12, 4, 20, 0.82)', '--card-border': 'rgba(192, 119, 255, 0.22)',
+        '--accent': '#cf8cff', '--muted': 'rgba(248, 238, 255, 0.72)', '--glow': 'rgba(207, 140, 255, 0.12)'
+      },
+      green: {
+        '--bg1': '#000807', '--bg2': '#00120d', '--bg3': '#00331f', '--bg4': '#00532f',
+        '--card': 'rgba(4, 14, 10, 0.82)', '--card-border': 'rgba(95, 255, 168, 0.20)',
+        '--accent': '#67ffb2', '--muted': 'rgba(235, 255, 245, 0.72)', '--glow': 'rgba(103, 255, 178, 0.12)'
+      },
+      gold: {
+        '--bg1': '#090400', '--bg2': '#140900', '--bg3': '#332000', '--bg4': '#5b3a00',
+        '--card': 'rgba(18, 10, 2, 0.84)', '--card-border': 'rgba(255, 201, 92, 0.22)',
+        '--accent': '#ffc95c', '--muted': 'rgba(255, 248, 235, 0.72)', '--glow': 'rgba(255, 201, 92, 0.12)'
+      },
+      ice: {
+        '--bg1': '#040814', '--bg2': '#091a2f', '--bg3': '#12314d', '--bg4': '#1b5b78',
+        '--card': 'rgba(6, 14, 24, 0.82)', '--card-border': 'rgba(145, 220, 255, 0.22)',
+        '--accent': '#8de7ff', '--muted': 'rgba(235, 250, 255, 0.72)', '--glow': 'rgba(141, 231, 255, 0.12)'
+      },
+      sunset: {
+        '--bg1': '#120000', '--bg2': '#250000', '--bg3': '#5a1300', '--bg4': '#b13a00',
+        '--card': 'rgba(18, 7, 0, 0.82)', '--card-border': 'rgba(255, 146, 80, 0.22)',
+        '--accent': '#ff9a5b', '--muted': 'rgba(255, 244, 235, 0.72)', '--glow': 'rgba(255, 154, 91, 0.12)'
+      },
+      neon: {
+        '--bg1': '#000000', '--bg2': '#050012', '--bg3': '#12002a', '--bg4': '#2c005d',
+        '--card': 'rgba(7, 3, 18, 0.84)', '--card-border': 'rgba(255, 90, 214, 0.22)',
+        '--accent': '#ff5ad6', '--muted': 'rgba(248, 240, 255, 0.72)', '--glow': 'rgba(255, 90, 214, 0.12)'
+      }
+    };
+
     const schedules = {
       monday: [
         { name: 'Homeroom', start: '07:45', end: '07:55' },
@@ -163,6 +360,16 @@
 
     const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
     let lastPeriod = '';
+    let currentTheme = 'redblack';
+
+    function applyTheme(name) {
+      const theme = themes[name] || themes.redblack;
+      Object.entries(theme).forEach(([key, value]) => {
+        document.documentElement.style.setProperty(key, value);
+      });
+      currentTheme = name;
+      localStorage.setItem('theme', name);
+    }
 
     function toMinutes(time) {
       const [h, m] = time.split(':').map(Number);
@@ -171,13 +378,11 @@
 
     function getCurrentPeriod(now, schedule) {
       const currentMinutes = now.getHours() * 60 + now.getMinutes();
-
       for (const block of schedule) {
         const start = toMinutes(block.start);
         const end = toMinutes(block.end);
         if (currentMinutes >= start && currentMinutes < end) return block.name;
       }
-
       if (currentMinutes < toMinutes(schedule[0].start)) return 'Before School';
       return 'School Over';
     }
@@ -203,11 +408,11 @@
       const current = getCurrentPeriod(now, schedule);
 
       if (current !== lastPeriod) {
-        periodEl.classList.add('fade');
+        periodEl.classList.add('pop');
         setTimeout(() => {
           periodEl.textContent = current;
-          periodEl.classList.remove('fade');
-        }, 120);
+          periodEl.classList.remove('pop');
+        }, 140);
         lastPeriod = current;
       } else {
         periodEl.textContent = current;
@@ -220,10 +425,29 @@
       } else if (current === 'No School') {
         statusEl.textContent = 'Enjoy your day off.';
       } else {
-        statusEl.textContent = 'It will update automatically when the next class starts.';
+        statusEl.textContent = 'Updates automatically when the next class starts.';
       }
     }
 
+    const themeBtn = document.getElementById('themeBtn');
+    const themeMenu = document.getElementById('themeMenu');
+
+    themeBtn.addEventListener('click', () => {
+      themeMenu.classList.toggle('show');
+    });
+
+    themeMenu.addEventListener('click', e => {
+      if (e.target.matches('button[data-theme]')) {
+        applyTheme(e.target.dataset.theme);
+        themeMenu.classList.remove('show');
+      }
+    });
+
+    document.addEventListener('click', e => {
+      if (!e.target.closest('.theme-wrap')) themeMenu.classList.remove('show');
+    });
+
+    applyTheme(localStorage.getItem('theme') || 'redblack');
     updatePeriod();
     setInterval(updatePeriod, 1000);
   </script>
