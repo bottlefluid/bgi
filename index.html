@@ -3,246 +3,187 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>School Schedule Checker</title>
+  <title>LiquidSchedule</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
-    body { min-height: 100vh; display: flex; justify-content: center; align-items: center; background: linear-gradient(135deg, #0f172a, #1d4ed8); color: #fff; padding: 20px; }
-    .app { width: 100%; max-width: 920px; background: rgba(255,255,255,0.10); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.18); border-radius: 24px; padding: 28px; box-shadow: 0 18px 40px rgba(0,0,0,0.28); }
-    h1 { text-align: center; margin-bottom: 8px; font-size: clamp(1.7rem, 3vw, 2.5rem); }
-    .subtitle { text-align: center; opacity: 0.9; margin-bottom: 22px; }
-    .top { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-bottom: 16px; }
-    .card { background: rgba(255,255,255,0.12); border-radius: 18px; padding: 18px; border: 1px solid rgba(255,255,255,0.12); }
-    .highlight { border-color: #fde68a; box-shadow: 0 0 0 1px rgba(253, 230, 138, 0.35) inset; }
-    .label { font-size: 0.86rem; opacity: 0.82; margin-bottom: 8px; }
-    .value { font-size: 1.35rem; font-weight: 700; line-height: 1.25; }
-    .small { margin-top: 6px; font-size: 0.92rem; opacity: 0.85; line-height: 1.35; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-top: 18px; }
-    .day { background: rgba(255,255,255,0.10); border-radius: 18px; padding: 16px; border: 1px solid rgba(255,255,255,0.10); }
-    .day h2 { font-size: 1.05rem; margin-bottom: 10px; display:flex; justify-content:space-between; gap:8px; align-items:center; }
-    .badge { font-size: 0.72rem; background: rgba(255,255,255,0.16); padding: 5px 8px; border-radius: 999px; white-space: nowrap; }
-    ul { list-style: none; display: grid; gap: 8px; }
-    li { background: rgba(255,255,255,0.10); border-radius: 12px; padding: 10px 12px; font-size: 0.92rem; line-height: 1.35; }
-    li.active { background: rgba(253, 224, 71, 0.20); outline: 2px solid rgba(253, 224, 71, 0.45); }
-    .period-name { font-weight: 700; }
-    .footer { text-align: center; margin-top: 18px; font-size: 0.88rem; opacity: 0.82; }
-    .note { margin-top: 14px; padding: 12px 14px; border-radius: 14px; background: rgba(255,255,255,0.10); font-size: 0.92rem; line-height: 1.45; }
-    .muted { opacity: 0.82; }
-    @media (max-width: 640px) { .app { padding: 18px; } .value { font-size: 1.15rem; } }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(135deg, #050505, #6b0000, #b30000);
+      color: white;
+      padding: 20px;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 600px;
+      background: rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(255, 80, 80, 0.25);
+      border-radius: 24px;
+      padding: 40px 30px;
+      text-align: center;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+    }
+
+    h1 {
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      margin-bottom: 20px;
+    }
+
+    #period {
+      font-size: clamp(2.2rem, 7vw, 4.5rem);
+      font-weight: 800;
+      color: #ff5a5a;
+      text-shadow: 0 0 18px rgba(255, 90, 90, 0.25);
+    }
+
+    .time {
+      margin-top: 14px;
+      font-size: 1rem;
+      opacity: 0.85;
+    }
+
+    .status {
+      margin-top: 18px;
+      font-size: 1.05rem;
+      opacity: 0.9;
+    }
   </style>
 </head>
 <body>
   <main class="app">
-    <h1>School Schedule Checker</h1>
-    <p class="subtitle">Updates automatically based on your current time and weekday.</p>
-
-    <section class="top">
-      <div class="card">
-        <div class="label">Current Time</div>
-        <div id="time" class="value">--:--:--</div>
-      </div>
-      <div class="card highlight">
-        <div class="label">Right Now</div>
-        <div id="currentPeriod" class="value">Loading...</div>
-        <div id="currentDetail" class="small muted"></div>
-      </div>
-      <div class="card">
-        <div class="label">Next Period</div>
-        <div id="nextPeriod" class="value">Loading...</div>
-        <div id="nextDetail" class="small muted"></div>
-      </div>
-      <div class="card">
-        <div class="label">Time Left</div>
-        <div id="timeLeft" class="value">Loading...</div>
-        <div id="status" class="small muted"></div>
-      </div>
-    </section>
-
-    <section class="note">
-      <strong>How it works:</strong> it checks today’s day of the week, uses that schedule, and tells you the current period. It also shows your next class and how long remains in the current block.
-    </section>
-
-    <section class="grid" id="scheduleGrid"></section>
-
-    <p class="footer">Edit the schedule data inside the script if your school changes times.</p>
+    <h1>Current Period</h1>
+    <div id="period">Loading...</div>
+    <div class="time" id="clock"></div>
+    <div class="status" id="status"></div>
   </main>
 
   <script>
     const schedules = {
       monday: [
-        { name: 'Homeroom', start: '07:45', end: '07:55', info: '08 HR-A' },
-        { name: 'Period 1', start: '07:58', end: '08:40', info: '6A-057 / 06 REL-A' },
-        { name: 'Period 2', start: '08:43', end: '09:28', info: '08 SS-A' },
-        { name: 'Period 3', start: '09:31', end: '10:14', info: '06 SCI-2' },
-        { name: 'Period 4', start: '10:19', end: '11:04', info: '06 STREAM-A' },
-        { name: 'Period 5', start: '11:07', end: '11:52', info: '06 Pre-Algebra-01' },
-        { name: 'Period 6', start: '11:55', end: '12:35', info: 'LUNCH' },
-        { name: 'Period 7', start: '12:37', end: '01:20', info: '06 ART-A' },
-        { name: 'Period 8', start: '01:23', end: '02:07', info: '06 ELA-1' },
-        { name: 'Period 9', start: '02:08', end: '02:50', info: '06 ELA-1' },
-        { name: 'Homeroom', start: '02:50', end: '03:00', info: '08 HR-A' }
+        { name: 'Homeroom', start: '07:45', end: '07:55' },
+        { name: 'Period 1', start: '07:58', end: '08:40' },
+        { name: 'Period 2', start: '08:43', end: '09:28' },
+        { name: 'Period 3', start: '09:31', end: '10:14' },
+        { name: 'Period 4', start: '10:19', end: '11:04' },
+        { name: 'Period 5', start: '11:07', end: '11:52' },
+        { name: 'Period 6', start: '11:55', end: '12:35' },
+        { name: 'Period 7', start: '12:37', end: '01:20' },
+        { name: 'Period 8', start: '01:23', end: '02:07' },
+        { name: 'Period 9', start: '02:08', end: '02:50' },
+        { name: 'Homeroom', start: '02:50', end: '03:00' }
       ],
       tuesday: [
-        { name: 'Homeroom', start: '07:45', end: '07:55', info: '08 HR-A' },
-        { name: 'Period 1', start: '07:58', end: '08:40', info: '6A-057 / 08 SCI-2' },
-        { name: 'Period 2', start: '08:43', end: '09:28', info: '6A-057 / MASS-A' },
-        { name: 'Period 3', start: '09:31', end: '10:14', info: '06 Pre-Algebra-01' },
-        { name: 'Period 4', start: '10:19', end: '11:04', info: '06 ELA-1' },
-        { name: 'Period 5', start: '11:07', end: '11:52', info: '06 WLANG-A' },
-        { name: 'Period 6', start: '11:55', end: '12:35', info: 'LUNCH' },
-        { name: 'Period 7', start: '12:37', end: '01:20', info: '06 REL-A' },
-        { name: 'Period 8', start: '01:23', end: '02:07', info: '08 SS-A' },
-        { name: 'Period 9', start: '02:08', end: '02:50', info: '08 ELA-1' },
-        { name: 'Homeroom', start: '02:50', end: '03:00', info: '08 HR-A' }
+        { name: 'Homeroom', start: '07:45', end: '07:55' },
+        { name: 'Period 1', start: '07:58', end: '08:40' },
+        { name: 'Period 2', start: '08:43', end: '09:28' },
+        { name: 'Period 3', start: '09:31', end: '10:14' },
+        { name: 'Period 4', start: '10:19', end: '11:04' },
+        { name: 'Period 5', start: '11:07', end: '11:52' },
+        { name: 'Period 6', start: '11:55', end: '12:35' },
+        { name: 'Period 7', start: '12:37', end: '01:20' },
+        { name: 'Period 8', start: '01:23', end: '02:07' },
+        { name: 'Period 9', start: '02:08', end: '02:50' },
+        { name: 'Homeroom', start: '02:50', end: '03:00' }
       ],
       wednesday: [
-        { name: 'Homeroom', start: '07:45', end: '07:55', info: '08 HR-A' },
-        { name: 'Period 1', start: '07:58', end: '08:40', info: '6A-057 / 08 REL-A' },
-        { name: 'Period 2', start: '08:43', end: '09:28', info: '08 WLANG-A' },
-        { name: 'Period 3', start: '09:31', end: '10:14', info: '08 SCI-2' },
-        { name: 'Period 4', start: '10:19', end: '11:04', info: '08 ELA-1' },
-        { name: 'Period 5', start: '11:07', end: '11:52', info: '08 ELA-1' },
-        { name: 'Period 6', start: '11:55', end: '12:35', info: 'LUNCH' },
-        { name: 'Period 7', start: '12:37', end: '01:20', info: '06 PE-A' },
-        { name: 'Period 8', start: '01:23', end: '02:07', info: '08 SS-A' },
-        { name: 'Period 9', start: '02:08', end: '02:50', info: '08 ELA-1' },
-        { name: 'Homeroom', start: '02:50', end: '03:00', info: '08 HR-A' }
+        { name: 'Homeroom', start: '07:45', end: '07:55' },
+        { name: 'Period 1', start: '07:58', end: '08:40' },
+        { name: 'Period 2', start: '08:43', end: '09:28' },
+        { name: 'Period 3', start: '09:31', end: '10:14' },
+        { name: 'Period 4', start: '10:19', end: '11:04' },
+        { name: 'Period 5', start: '11:07', end: '11:52' },
+        { name: 'Period 6', start: '11:55', end: '12:35' },
+        { name: 'Period 7', start: '12:37', end: '01:20' },
+        { name: 'Period 8', start: '01:23', end: '02:07' },
+        { name: 'Period 9', start: '02:08', end: '02:50' },
+        { name: 'Homeroom', start: '02:50', end: '03:00' }
       ],
       thursday: [
-        { name: 'Homeroom', start: '07:45', end: '07:55', info: '08 HR-A' },
-        { name: 'Period 1', start: '07:58', end: '08:40', info: '6A-057 / 06 REL-A' },
-        { name: 'Period 2', start: '08:43', end: '09:28', info: '08 SS-A' },
-        { name: 'Period 3', start: '09:31', end: '10:14', info: '06 SCI-2' },
-        { name: 'Period 4', start: '10:19', end: '11:04', info: '06 MUS-A' },
-        { name: 'Period 5', start: '11:07', end: '11:52', info: '06 ELA-1' },
-        { name: 'Period 6', start: '11:55', end: '12:35', info: 'LUNCH' },
-        { name: 'Period 7', start: '12:37', end: '01:20', info: '08 PE-A' },
-        { name: 'Period 8', start: '01:23', end: '02:07', info: '06 Pre-Algebra-01' },
-        { name: 'Period 9', start: '02:08', end: '02:50', info: '06 SCI-2' },
-        { name: 'Homeroom', start: '02:50', end: '03:00', info: '08 HR-A' }
+        { name: 'Homeroom', start: '07:45', end: '07:55' },
+        { name: 'Period 1', start: '07:58', end: '08:40' },
+        { name: 'Period 2', start: '08:43', end: '09:28' },
+        { name: 'Period 3', start: '09:31', end: '10:14' },
+        { name: 'Period 4', start: '10:19', end: '11:04' },
+        { name: 'Period 5', start: '11:07', end: '11:52' },
+        { name: 'Period 6', start: '11:55', end: '12:35' },
+        { name: 'Period 7', start: '12:37', end: '01:20' },
+        { name: 'Period 8', start: '01:23', end: '02:07' },
+        { name: 'Period 9', start: '02:08', end: '02:50' },
+        { name: 'Homeroom', start: '02:50', end: '03:00' }
       ],
       friday: [
-        { name: 'Homeroom', start: '07:45', end: '07:55', info: '08 HR-A' },
-        { name: 'Period 1', start: '07:58', end: '08:40', info: '6A-057 / 06 REL-A' },
-        { name: 'Period 2', start: '08:43', end: '09:28', info: '08 SS-A' },
-        { name: 'Period 3', start: '09:31', end: '10:14', info: '08 ELA-1' },
-        { name: 'Period 4', start: '10:19', end: '11:04', info: '7A-052' },
-        { name: 'Period 5', start: '11:07', end: '11:52', info: 'Computer Lab-058' },
-        { name: 'Period 6', start: '11:55', end: '12:35', info: 'LUNCH' },
-        { name: 'Period 7', start: '12:37', end: '01:20', info: '08 PE-A' },
-        { name: 'Period 8', start: '01:23', end: '02:07', info: '06 Pre-Algebra-01' },
-        { name: 'Period 9', start: '02:08', end: '02:50', info: '06 SCI-2' },
-        { name: 'Homeroom', start: '02:50', end: '03:00', info: '08 HR-A' }
+        { name: 'Homeroom', start: '07:45', end: '07:55' },
+        { name: 'Period 1', start: '07:58', end: '08:40' },
+        { name: 'Period 2', start: '08:43', end: '09:28' },
+        { name: 'Period 3', start: '09:31', end: '10:14' },
+        { name: 'Period 4', start: '10:19', end: '11:04' },
+        { name: 'Period 5', start: '11:07', end: '11:52' },
+        { name: 'Period 6', start: '11:55', end: '12:35' },
+        { name: 'Period 7', start: '12:37', end: '01:20' },
+        { name: 'Period 8', start: '01:23', end: '02:07' },
+        { name: 'Period 9', start: '02:08', end: '02:50' },
+        { name: 'Homeroom', start: '02:50', end: '03:00' }
       ]
     };
 
-    const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-    const shortDay = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
-    function toMinutes(t) {
-      const [h, m] = t.split(':').map(Number);
+    function toMinutes(time) {
+      const [h, m] = time.split(':').map(Number);
       return h * 60 + m;
     }
 
-    function fmtTime(date) {
-      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    }
-
-    function minutesUntil(target, now) {
-      return Math.max(0, target - (now.getHours() * 60 + now.getMinutes()));
-    }
-
-    function getActiveSchedule() {
-      const today = dayNames[new Date().getDay()];
-      return schedules[today] || null;
-    }
-
-    function renderGrid(schedule, activeIndex) {
-      const grid = document.getElementById('scheduleGrid');
-      grid.innerHTML = '';
-      if (!schedule) {
-        grid.innerHTML = '<div class="day"><h2>No schedule</h2><ul><li>No school today.</li></ul></div>';
-        return;
-      }
-      const dayTitle = shortDay[new Date().getDay()] + ' schedule';
-      const dayBox = document.createElement('div');
-      dayBox.className = 'day';
-      dayBox.innerHTML = `<h2><span>${dayTitle}</span><span class="badge">Today</span></h2>`;
-      const ul = document.createElement('ul');
-      schedule.forEach((p, i) => {
-        const li = document.createElement('li');
-        if (i === activeIndex) li.classList.add('active');
-        li.innerHTML = `<div class="period-name">${p.name}</div><div>${p.start} - ${p.end}</div><div class="muted">${p.info}</div>`;
-        ul.appendChild(li);
-      });
-      dayBox.appendChild(ul);
-      grid.appendChild(dayBox);
-    }
-
-    function update() {
+    function updatePeriod() {
       const now = new Date();
-      const schedule = getActiveSchedule();
-      document.getElementById('time').textContent = fmtTime(now);
+      const day = days[now.getDay()];
+      const schedule = schedules[day];
+
+      document.getElementById('clock').textContent =
+        now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
       if (!schedule) {
-        document.getElementById('currentPeriod').textContent = 'No school today';
-        document.getElementById('currentDetail').textContent = 'Weekend schedule not set.';
-        document.getElementById('nextPeriod').textContent = '—';
-        document.getElementById('nextDetail').textContent = '';
-        document.getElementById('timeLeft').textContent = '—';
-        document.getElementById('status').textContent = 'Relax.';
-        renderGrid(null, -1);
+        document.getElementById('period').textContent = 'No School';
+        document.getElementById('status').textContent = 'Enjoy your day off.';
         return;
       }
 
-      const currentMins = now.getHours() * 60 + now.getMinutes();
-      let activeIndex = -1;
-      let nextIndex = -1;
+      const currentMinutes = now.getHours() * 60 + now.getMinutes();
+      let current = 'No School';
 
-      for (let i = 0; i < schedule.length; i++) {
-        const start = toMinutes(schedule[i].start);
-        const end = toMinutes(schedule[i].end);
-        if (currentMins >= start && currentMins < end) {
-          activeIndex = i;
-          nextIndex = i + 1 < schedule.length ? i + 1 : -1;
+      for (const block of schedule) {
+        const start = toMinutes(block.start);
+        const end = toMinutes(block.end);
+
+        if (currentMinutes >= start && currentMinutes < end) {
+          current = block.name;
           break;
         }
-        if (currentMins < start && nextIndex === -1) nextIndex = i;
       }
 
-      if (activeIndex >= 0) {
-        const p = schedule[activeIndex];
-        const end = toMinutes(p.end);
-        const left = Math.max(0, end - currentMins);
-        document.getElementById('currentPeriod').textContent = p.name;
-        document.getElementById('currentDetail').textContent = `${p.start} - ${p.end} • ${p.info}`;
-        document.getElementById('timeLeft').textContent = `${left} minute(s)`;
-        document.getElementById('status').textContent = 'You are in class right now.';
-      } else if (currentMins < toMinutes(schedule[0].start)) {
-        document.getElementById('currentPeriod').textContent = 'Before school';
-        document.getElementById('currentDetail').textContent = `First block starts at ${schedule[0].start}`;
-        document.getElementById('timeLeft').textContent = `${minutesUntil(toMinutes(schedule[0].start), now)} minute(s)`;
-        document.getElementById('status').textContent = 'School has not started yet.';
+      if (current === 'No School') {
+        if (currentMinutes < toMinutes(schedule[0].start)) {
+          document.getElementById('status').textContent = 'School has not started yet.';
+        } else {
+          document.getElementById('status').textContent = 'School is over for today.';
+        }
       } else {
-        document.getElementById('currentPeriod').textContent = 'School is over';
-        document.getElementById('currentDetail').textContent = 'All periods have ended for today.';
-        document.getElementById('timeLeft').textContent = '0 minute(s)';
-        document.getElementById('status').textContent = 'Go home and rest.';
+        document.getElementById('status').textContent = 'It will change automatically when the next class starts.';
       }
 
-      if (nextIndex >= 0) {
-        const n = schedule[nextIndex];
-        document.getElementById('nextPeriod').textContent = n.name;
-        document.getElementById('nextDetail').textContent = `${n.start} - ${n.end} • ${n.info}`;
-      } else {
-        document.getElementById('nextPeriod').textContent = 'No more periods';
-        document.getElementById('nextDetail').textContent = '';
-      }
-
-      renderGrid(schedule, activeIndex);
+      document.getElementById('period').textContent = current;
     }
 
-    update();
-    setInterval(update, 1000);
+    updatePeriod();
+    setInterval(updatePeriod, 1000);
   </script>
 </body>
 </html>
