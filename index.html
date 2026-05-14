@@ -58,9 +58,9 @@
     .app {
       position: relative;
       width: 100%;
-      max-width: 680px;
+      max-width: 760px;
       text-align: center;
-      padding: 48px 34px 30px;
+      padding: 48px 34px 34px;
       border-radius: 30px;
       background: var(--card);
       border: 1px solid var(--card-border);
@@ -191,6 +191,28 @@
       min-height: 1.2em;
     }
 
+    .lunch {
+      margin-top: 18px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      text-align: left;
+    }
+
+    .lunch h2 {
+      font-size: 1rem;
+      margin-bottom: 8px;
+      color: #fff;
+    }
+
+    .lunch-items {
+      font-size: 0.95rem;
+      line-height: 1.5;
+      color: rgba(255,255,255,0.9);
+      white-space: pre-line;
+    }
+
     .pulse {
       display: inline-block;
       width: 9px;
@@ -243,6 +265,12 @@
     <div id="period">Loading...</div>
     <div class="time" id="clock"></div>
     <div class="status" id="status"></div>
+
+    <div class="lunch">
+      <h2>Lunch Today</h2>
+      <div class="lunch-items" id="lunchItems">Loading lunch...</div>
+    </div>
+
     <span class="pulse" aria-hidden="true"></span>
   </main>
 
@@ -358,18 +386,18 @@
       ]
     };
 
+    const lunchMap = {
+      monday: "Week 1 Monday:\nTwisted Cheesy Breadsticks\nSteamed Corn\nCrispy Chicken Sandwich\nBagel Bag with Cheese",
+      tuesday: "Week 1 Tuesday:\nFluffy French Toast Sticks\nJuicy Breakfast Sausages\nCrispy Hash Brown\nBrunch for Lunch items\nGrilled Cheese Sandwich\nBagel Bag with Cheese",
+      wednesday: "Week 1 Wednesday:\nCrispy Popcorn Chicken Mash\nRoasted Carrots\nAll Natural Beef Hot Dog on a Bun\nBagel Bag with Cheese",
+      thursday: "Week 1 Thursday:\nCreamy Mac and Cheese\nSeasoned Garlic Breadstick\nChicken Nuggets\nBagel Bag with Cheese",
+      friday: "Week 1 Friday:\nCheese Pizza\nPepperoni Pizza\nChicken Caesar Salad\nBagel Bag with Cheese",
+      saturday: "No school today",
+      sunday: "No school today"
+    };
+
     const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
     let lastPeriod = '';
-    let currentTheme = 'redblack';
-
-    function applyTheme(name) {
-      const theme = themes[name] || themes.redblack;
-      Object.entries(theme).forEach(([key, value]) => {
-        document.documentElement.style.setProperty(key, value);
-      });
-      currentTheme = name;
-      localStorage.setItem('theme', name);
-    }
 
     function toMinutes(time) {
       const [h, m] = time.split(':').map(Number);
@@ -397,6 +425,9 @@
 
       const periodEl = document.getElementById('period');
       const statusEl = document.getElementById('status');
+      const lunchEl = document.getElementById('lunchItems');
+
+      lunchEl.textContent = lunchMap[day] || "No lunch info available.";
 
       if (!schedule) {
         periodEl.textContent = 'No School';
@@ -438,7 +469,10 @@
 
     themeMenu.addEventListener('click', e => {
       if (e.target.matches('button[data-theme]')) {
-        applyTheme(e.target.dataset.theme);
+        Object.entries(themes[e.target.dataset.theme]).forEach(([key, value]) => {
+          document.documentElement.style.setProperty(key, value);
+        });
+        localStorage.setItem('theme', e.target.dataset.theme);
         themeMenu.classList.remove('show');
       }
     });
@@ -447,7 +481,11 @@
       if (!e.target.closest('.theme-wrap')) themeMenu.classList.remove('show');
     });
 
-    applyTheme(localStorage.getItem('theme') || 'redblack');
+    const saved = localStorage.getItem('theme') || 'redblack';
+    Object.entries(themes[saved]).forEach(([key, value]) => {
+      document.documentElement.style.setProperty(key, value);
+    });
+
     updatePeriod();
     setInterval(updatePeriod, 1000);
   </script>
